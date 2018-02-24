@@ -1,0 +1,4 @@
+1.Change the 'same scaling method' into 'padding method'
+2.Add more kinds of basic blocks (VGG blocks,Bottleneck blocks,etc.)
+3.Try FPN method
+4.Add new method in DataAug.py

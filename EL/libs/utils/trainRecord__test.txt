@@ -1,0 +1,4 @@
+
+
+{'testval': 3, 'testavg': 3.0}
+{'testval': 4, 'testavg': 3.375}
