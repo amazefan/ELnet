@@ -10,6 +10,7 @@ from torch.autograd import Variable
 from Argparser import Argparser
 from libs.utils  import DataNormalize,InputForm
 from libs.net    import ELnet 
+from Evautils    import Record,accuracy
 
 parser = Argparser()
 args = parser.parse_args()
@@ -18,10 +19,10 @@ def main():
     NG_root = args.train_folder_NG
     OK_root = args.train_folder_OK
     
-    ELdata = InputForm.Img(NG_root,OK_root,  ifrate = True,
+    ELdata = InputForm.Img(NG_root,OK_root,  
                  transform = [DataNormalize.meanSubtract,DataNormalize.addAxis,
                               DataNormalize.cvt2flt32,torch.Tensor],
-                 rate = 0.5)
+                 rate = args.sp)
     train_loader = torch.utils.data.DataLoader(
                                                 ELdata,
                                                 batch_size= args.batch_size, 
@@ -39,7 +40,7 @@ def main():
     train(train_loader, net, loss_function, optimizer, epoches, 
           args.cuda, args.print_freq)
     cwd = args.save_folder
-    torch.save(net, cwd + '\\ELnet.pkl')
+    torch.save(net, cwd + '/ELnet.pkl')
 
 def train(loader, model, loss_function, optimizer, epoches, ifcuda, print_freq):
     
@@ -75,49 +76,11 @@ def train(loader, model, loss_function, optimizer, epoches, ifcuda, print_freq):
         losses.record()
         accuracys.record() 
 
-class Record(object):
-    
-    def __init__(self,name):
-        global args
-        self.reset()
-        self.name = name
-        #self.cwd = os.getcwd() 
-        self.cwd = args.save_folder
-        with open(self.cwd + '\\trainRecord__' + self.name + '.txt','w') as txt:
-            txt.write('\n')
-            txt.close()
-        
-    def reset(self):
-        self.val = 0
-        self.cnt = 0
-        self.avg = 0
-        self.sum = 0
-    def update(self , val , num):
-        self.val = val
-        self.sum += val*num
-        self.cnt += num
-        self.avg = self.sum/self.cnt 
-    def record(self):
-        self.dir = {self.name +'_val':self.val,self.name + '_avg':self.avg}
-        with open(self.cwd + '\\trainRecord__' + self.name + '.txt','r+') as txt:
-            txt.read()
-            txt.write('\n'+str(self.dir))
-            txt.close()
-            
-def accuracy(output , label):
-    _,pred_index = output.topk(1,1)            
-    batch_size = label.size(0)
-    true_num = 0
-    for i in range(batch_size):
-        if label[i]==pred_index[i][0] :
-            true_num +=1
-    return 100*true_num/batch_size
 
 def lrUpdate(optimizer,epoch):
     global args
-    epoches = args.epoches
     scale = np.e/10*2
-    step  = arps.epoches//10
+    step  = 10
     lr = args.lr * (scale ** (epoch // step))
     print('lr: {}'.format(lr))
     if (epoch != 0) & (epoch % step == 0):
