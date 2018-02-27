@@ -115,8 +115,9 @@ def accuracy(output , label):
 
 def lrUpdate(optimizer,epoch):
     global args
+    epoches = args.epoches
     scale = np.e/10*2
-    step  = 10
+    step  = arps.epoches//10
     lr = args.lr * (scale ** (epoch // step))
     print('lr: {}'.format(lr))
     if (epoch != 0) & (epoch % step == 0):
